@@ -5,9 +5,16 @@ void initEspNowMaster(){
 
     esp_now_register_send_cb([](uint8_t* mac, uint8_t sendStatus) {     //CALLBACK function called when SEND register activated
       if (sendStatus == 0) Serial.print("send_cb, send done, status = SUCCESS \n");
-      else Serial.print("send_cb, send done, status = FAILED \n\n");
+      if (sendStatus != 0) Serial.print("send_cb, send done, status = FAILED \n\n");
     });
     esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
+
+    //read the eeprom for key and Hub's macAdd.
+    readEEPROM(key, 16, eepromKeyAddress);
+    readEEPROM(hubMacAdd, 6, eepromHubMacAddress);
+
+//    Serial.println(hubMacAdd[1]);
+//    Serial.println(key[1]);
     
     esp_now_set_kok(key, 16);                     //set local key
     esp_now_add_peer(hubMacAdd, ESP_NOW_ROLE_SLAVE, WIFI_CHANNEL, key, 16);
