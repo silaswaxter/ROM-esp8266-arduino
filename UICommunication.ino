@@ -1,81 +1,40 @@
-String checkUI(){
+void checkUI(){
   String message;  
   if (Serial.available())
     message = UIRead();
     
-  if (message== "~ISC~"){
-    UI_ISC();
-    return "ISC";
+  if (message == "~ISC~"){
+    //NOTE: Wifi.macAddress() and Wifi.softAPmacAddress are different.
+    Serial.printf("~HUB;MacADD: %s~\n", WiFi.softAPmacAddress().c_str());
+    return;
   }
 
-  if (message == "~getS1Quat~"){
-    UI_GetQuat(1);
-    return "";
+  if (message == "~startQuatSender~"){
+    Serial.print("~startingQuatSender~\n");
+    quatSenderEnabled = 1;
+    return;
   }
 
-  if (message == "~getS2Quat~"){
-    UI_GetQuat(2);
-    return "";
+  if (message == "~stopQuatSender~"){
+    Serial.print("~stopingQuatSender~\n");
+    quatSenderEnabled = 0;
+    return;
   }
   
   if (message == "~R2Rkey~"){
     UI_Key();
-    return "pairing";
+    return;
   }
   
   if (message == "~R2RMac~"){
     UI_MacAdd();
-    return "pairing";
+    return;
   }
 
   if (message == "~restart~"){
     Serial.print("~restarting~\n");
     ESP.restart();
   }
-  
-  return "";
-}
-
-void UI_ISC(){
-  //NOTE: Wifi.macAddress() and Wifi.softAPmacAddress are different.
-  Serial.printf("~HUB;MacADD: %s~\n", WiFi.softAPmacAddress().c_str());
-}
-
-bool UI_GetQuat(int sensorSpecifier){
-  if (sensorSpecifier == 1){
-    if(msgReadySensor1){
-      String s1Quat = ("~S1 " + (String) sensor1.q[w] + ":" + (String) sensor1.q[x] + 
-                  ":" + (String) sensor1.q[y] + ":" + (String) sensor1.q[z] + "~\n");
-
-      for (int i = 0; i<=4; i++){
-        sensor1.q[i] = NULL;
-      }
-      Serial.print(s1Quat);
-  
-      //if(UIRead() == sensData){
-      //    successStatus = true;
-      //}
-      return true;
-    }
-  }
-
-  if (sensorSpecifier == 2){
-    if(msgReadySensor2){
-      String s2Quat = ("~S2 " + (String) sensor2.q[w] + ":" + (String) sensor2.q[x] + 
-                        ":" + (String) sensor2.q[y] + ":" + (String) sensor2.q[z] + "~\n");
-      
-      for (int i = 0; i<=4; i++){
-        sensor2.q[i] = NULL;
-      }
-      Serial.print(s2Quat);
-  
-      //if(UIRead() == sensData){
-      //    successStatus = true;
-      //}
-      return true;
-    }
-  }
-  return false;
 }
 
 void UI_Key(){
@@ -192,6 +151,26 @@ UIStoreBytes(UI Array Transfers):
 Init. Serial Com. [DOES NOT USE: UIStoreBytes()]
   COMMAND:    "~ISC~"
   RESPONSE:   "~HUB;MacADD: %s~\n", WiFi.macAddress().c_str()
+
+Get Sensor 1 Quaternion Data
+  COMMAND:    "~getS1Quat~"
+  
+  if(msgReadySensor1)
+    RESPONSE:   "~S1: q[w]:q[x]:q[y]:q[z]:~\n"
+  else
+    RESPONSE:   "~S1QuatNotReady~\n"
+    
+  UI_GetQuat(1);
+
+Get Sensor 2 Quaternion Data
+  COMMAND:    "~getS2Quat~"
+  
+  if(msgReadySensor1)
+    RESPONSE:   "~S2: q[w]:q[x]:q[y]:q[z]:~\n"
+  else
+    RESPONSE:   "~S2QuatNotReady~\n"
+    
+  UI_GetQuat(2);
     
 Ready to Recieve aes128 key
   COMMAND:    "~R2Rkey~"
@@ -211,4 +190,9 @@ Ready to Recieve Sensor2 MacAdd
   COMMAND:    "~s2~"
   RESPONSE:   "~s2~\n"
   UIStoreBytes(s2MacAdd, 6);
+
+Restart Device
+  COMMAND:    "~restart~"
+  RESPONSE:   "~restarting~\n"  
+  ESP.restart();
 */

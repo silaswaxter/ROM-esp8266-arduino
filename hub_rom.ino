@@ -18,10 +18,9 @@ uint8_t key[16];
 const char *ssid = "ROM Device | Orange Spruce";     //The name of the Wi-Fi network that will be created
 const char *password = "Bhad Bhabie";   // The password required to connect to it, leave blank for an open network
 
-long currentTime;
-volatile bool currentlyPairing = false;
-volatile bool msgReadySensor1 = false;
-volatile bool msgReadySensor2 = false;
+volatile int quatSenderEnabled = 0;
+volatile bool s1QuatReady = false;
+volatile bool s2QuatReady = false;
 
 #define w 0
 #define x 1
@@ -46,4 +45,25 @@ void setup() {
 
 void loop() {
   checkUI();
+
+  if(quatSenderEnabled == 1){
+    if(s1QuatReady){
+    Serial.print("S1 " + (String) sensor1.q[w] + ":" + (String) sensor1.q[x] + 
+            ":" + (String) sensor1.q[y] + ":" + (String) sensor1.q[z] + "\n");
+    
+    for (int i = 0; i<=4; i++)
+      sensor1.q[i] = NULL;
+
+    s1QuatReady = false;
+    }
+    if(s2QuatReady){
+      Serial.print("S2 " + (String) sensor2.q[w] + ":" + (String) sensor2.q[x] + 
+              ":" + (String) sensor2.q[y] + ":" + (String) sensor2.q[z] + "\n");
+      
+      for (int i = 0; i<=4; i++)
+        sensor2.q[i] = NULL;
+  
+      s2QuatReady = false;
+    }
+  }
 }
